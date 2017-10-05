@@ -69,12 +69,12 @@ def viterbi(sample, trans_counts, emmission_counts, list_of_tags, tag_count):
                 # it contains the count of current tag
                 tot_count = tag_count[currnode]
                 # for the word how much that it is tagged as curr node
-                count = emmision_counts[text[counter]].get(currnode, 0)
+                count = emmission_counts[text[counter]].get(currnode, 0)
                 # Calculate emmission probability
                 word_currentprob = float(count) / tot_count
 
                 tot_count = tag_count.get(prevnode, 0)
-                count = bigram.get((prevnode + ' ' + currnode), 0)
+                count = trans_counts.get((prevnode + ' ' + currnode), 0)
                 transition_prob = count / float(tot_count)
                 # temp stores the value for that time step
                 temp = transition_prob * \
@@ -108,37 +108,42 @@ def viterbi(sample, trans_counts, emmission_counts, list_of_tags, tag_count):
     return result_tags  # result_tags contains our result
 
 
-# Below code appends <s> and </s> states in the empty line
-lines = []
-with open('wsj00-18.tag', "r") as training_file:
-    lines.append("<s>\t<s>")
-    for line in training_file:
-        if(line == "\n"):
-            lines.append("</s>\t</s>")
-            lines.append("<s>\t<s>")
-        else:
-            lines.append(line.rstrip())
-lines.append("</s>\t</s>")
+def main():
+    # Below code appends <s> and </s> states in the empty line
+    lines = []
+    with open('wsj00-18.tag', "r") as training_file:
+        lines.append("<s>\t<s>")
+        for line in training_file:
+            if(line == "\n"):
+                lines.append("</s>\t</s>")
+                lines.append("<s>\t<s>")
+            else:
+                lines.append(line.rstrip())
+    lines.append("</s>\t</s>")
 
-# Finally we append </s>\t</s> because each time counter m appending end and
-# start states
-wordandtags = [(l.split("\t")[0], l.split("\t")[1])
-               for l in lines]  # Reads a tuple of words and it corresponding tag
-# Just reads the tags. It will be easy to bigram counts with it
-wordtags = [l.split("\t")[1] for l in lines]
-bigram = {}  # Counts for bigram tags (say NN DT)
-tag_count = {}  # Counts for storing tag_count counts
-bigram = get_transmission_counts(wordtags)  # Passing word tags as an argument
-# Store all tag_count counts for tags
-tag_count = Counter([''.join(w) for w in zip(wordtags)])
-# Calculates emmission counts. We will have word count for a given tag
-# I am just passing wordandtags as an argument. It is a tuple that
-# contains a word and its tag
-emitcounts = get_emmision_counts(wordandtags)
-list_of_tags = tag_count.keys()  # returns the list of tags (47 tags)
-transcounts = bigram  # just copying those values into these variables.
-print viterbi(['This', 'is', 'a', 'sentence', '.'], transcounts, emitcounts, list_of_tags, tag_count)
-print viterbi(['This', 'might', 'produce', 'a', 'result', 'if', 'the', 'system', 'works', 'well', '.'], transcounts, emitcounts, list_of_tags, tag_count)
-print viterbi(['Can', 'a', 'can', 'can', 'a', 'can', '?'], transcounts, emitcounts, list_of_tags, tag_count)
-print viterbi(['Can', 'a', 'can', 'move', 'a', 'can', '?'], transcounts, emitcounts, list_of_tags, tag_count)
-print viterbi(['Can', 'you', 'say', 'how', 'a', 'can', 'can', 'run', '?'], transcounts, emitcounts, list_of_tags, tag_count)
+    # Finally we append </s>\t</s> because each time counter m appending end and
+    # start states
+    wordandtags = [(l.split("\t")[0], l.split("\t")[1])
+                for l in lines]  # Reads a tuple of words and it corresponding tag
+    # Just reads the tags. It will be easy to bigram counts with it
+    wordtags = [l.split("\t")[1] for l in lines]
+    bigram = {}  # Counts for bigram tags (say NN DT)
+    tag_count = {}  # Counts for storing tag_count counts
+    bigram = get_transmission_counts(wordtags)  # Passing word tags as an argument
+    # Store all tag_count counts for tags
+    tag_count = Counter([''.join(w) for w in zip(wordtags)])
+    # Calculates emmission counts. We will have word count for a given tag
+    # I am just passing wordandtags as an argument. It is a tuple that
+    # contains a word and its tag
+    emitcounts = get_emmision_counts(wordandtags)
+    list_of_tags = tag_count.keys()  # returns the list of tags (47 tags)
+    transcounts = bigram  # just copying those values into these variables.
+    print viterbi(['This', 'is', 'a', 'sentence', '.'], transcounts, emitcounts, list_of_tags, tag_count)
+    print viterbi(['This', 'might', 'produce', 'a', 'result', 'if', 'the', 'system', 'works', 'well', '.'], transcounts, emitcounts, list_of_tags, tag_count)
+    print viterbi(['Can', 'a', 'can', 'can', 'a', 'can', '?'], transcounts, emitcounts, list_of_tags, tag_count)
+    print viterbi(['Can', 'a', 'can', 'move', 'a', 'can', '?'], transcounts, emitcounts, list_of_tags, tag_count)
+    print viterbi(['Can', 'you', 'say', 'how', 'a', 'can', 'can', 'run', '?'], transcounts, emitcounts, list_of_tags, tag_count)
+
+
+if __name__=="__main__":
+    main()
